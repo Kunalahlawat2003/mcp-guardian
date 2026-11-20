@@ -1,0 +1,79 @@
+# MCP Guardian configuration: copy to ~/.mcp-guardian/config.toml (every key is optional).
+# Changes take effect after `mcp-guardian stop && mcp-guardian start`
+# (shims and the gateway pick up gated_methods / block_style from the daemon).
+
+# Requests that need approval. Everything else (initialize, tools/list, ping, ...) is
+# forwarded immediately but still recorded in the audit log.
+gated_methods = ["tools/call", "resources/read", "prompts/get"]
+
+# What to do with a gated request that no rule matches: "ask" (popup), "allow" or "block".
+default_action = "ask"
+
+# Seconds to wait for a decision before blocking automatically. 0 = wait forever.
+# (Clients have their own timeouts; when they give up they send notifications/cancelled
+# and the popup is withdrawn.)
+approval_timeout = 300
+
+# Daemon unreachable? "closed" = block gated requests (safe default), "open" = let them through.
+fail_mode = "closed"
+
+# Shims / gateway start the daemon on demand when it is not running.
+auto_start_daemon = true
+
+# How a blocked tools/call is reported to Claude:
+#   "error"  -> JSON-RPC error -32050 (the request was never executed)
+#   "result" -> a tool result with isError: true and an explanatory text
+block_style = "error"
+
+# Flood protection for the popup queue.
+max_pending = 32
+max_pending_per_session = 8
+
+# Seconds Allow/Block stay disabled after a popup appears (prevents accidental clicks/keystrokes).
+arm_delay = 0.8
+
+# Show a small toast when a new MCP client/server connection is detected.
+notify_new_sessions = true
+
+# Approval UI: "auto" (Tk popup -> macOS dialog -> console), "tk", "osascript", "console", "none".
+ui = "auto"
+
+# Tool arguments in ~/.mcp-guardian/logs/audit.jsonl: "redacted" (mask secrets, truncate),
+# "full" or "none".
+audit_arguments = "redacted"
+
+# Rules are evaluated top to bottom; the first match wins. Glob patterns (*, ?, [abc]).
+# "tool" matches the tool name, the resource URI (resources/read) or the prompt name.
+[[rules]]
+action = "allow"
+server = "guardian-demo"
+tool = "get_weather"
+note = "harmless demo tool"
+
+[[rules]]
+action = "block"
+tool = "*delete*"
+note = "never let the model delete things"
+
+# [[rules]]
+# action = "ask"            # force a popup even if a later rule would allow it
+# server = "filesystem"
+# transport = "stdio"       # stdio = Claude Desktop local server, http = remote connector
+
+# --------------------------------------------------------------------------------------
+# HTTP gateway for claude.ai remote connectors (`mcp-guardian gateway`).
+[gateway]
+host = "127.0.0.1"
+port = 8787
+# secret = "..."   # path secret; generated and stored in ~/.mcp-guardian/gateway.secret if omitted
+
+[gateway.upstreams.deepwiki]
+url = "https://mcp.deepwiki.com/mcp"
+
+[gateway.upstreams.demo]
+url = "http://127.0.0.1:9000/mcp"   # `mcp-guardian demo-server --transport http --port 9000`
+
+# [gateway.upstreams.internal]
+# url = "https://mcp.internal.example.com/mcp"
+# headers = { Authorization = "Bearer <token>" }   # injected upstream; never exposed to claude.ai
+# forward_authorization = false
