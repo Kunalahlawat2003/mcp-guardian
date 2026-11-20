@@ -4,7 +4,7 @@
 
 Every time Claude tries to call an MCP tool, read an MCP resource or fetch an MCP prompt, MCP Guardian holds the request, shows an always-on-top popup with who is asking, which server, which tool and the exact arguments, and lets you **Allow** or **Block** it. Allowed requests continue to the server unchanged; blocked requests never reach the server and Claude receives a clear denial.
 
-> 🎥 **Demo video:** _add link here_ · 📐 **Architecture:** [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) · 🎬 **Demo script:** [docs/DEMO.md](docs/DEMO.md)
+> 🎥 **Demo video:** https://youtu.be/jjo_0CZ1MPg · 📐 **Architecture:** [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) · 🎬 **Demo script:** [docs/DEMO.md](docs/DEMO.md)
 
 ```
  Claude Desktop ──stdio──▶ guardian shim ──stdio──▶ local MCP server      (filesystem, git, …)
